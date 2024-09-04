@@ -15,7 +15,7 @@ load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # from langchain.document_loaders import PyPDFLoader
-from langchain.document_loaders import (
+from langchain_community.document_loaders import (
     CSVLoader,
     EverNoteLoader,
     PyPDFLoader,
@@ -33,14 +33,23 @@ from langchain.document_loaders import (
     UnstructuredExcelLoader,
 )
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.embeddings import OpenAIEmbeddings
-from langchain.vectorstores import FAISS
-from langchain import OpenAI
-from langchain.chat_models import ChatOpenAI
+# from langchain.embeddings import OpenAIEmbeddings
+# from langchain.vectorstores import FAISS
+# from langchain import OpenAI
+# from langchain.chat_models import ChatOpenAI
 from langchain.chains import RetrievalQA, LLMChain
 from langchain.chains.summarize import load_summarize_chain
 from langchain.docstore.document import Document
 from langchain.prompts import PromptTemplate
+from langchain.chains import RetrievalQA, LLMChain
+from langchain.chains.summarize import load_summarize_chain
+from langchain.docstore.document import Document
+from langchain.prompts import PromptTemplate
+
+from langchain_community.embeddings import OpenAIEmbeddings
+from langchain_community.vectorstores import FAISS
+from langchain_community.llms import OpenAI
+from langchain_community.chat_models import ChatOpenAI
 
 from fastapi import FastAPI, File, UploadFile, Request, Response, HTTPException, Depends, APIRouter
 from fastapi.responses import FileResponse, JSONResponse
@@ -59,6 +68,7 @@ from auth import (
     verify_password
 )
 from auth_bearer import JWTBearer
+import gdrive_search
 
 
 # Map file extensions to document loaders and their arguments
@@ -966,6 +976,34 @@ def check_daily_quota(type: str, files, user_id):
         return { "status": True, "message": ""}
 
     return { "status": True, "message": ""}
+
+@router.get("/auth_drive")
+def auth_drive():
+    try:
+        folder_id = '<YOUR_DRIVE_FOLDER_ID>'
+        # Authenticate and create the Drive API service
+        service = gdrive_search.authenticate()
+
+        # List and download files from the specified folder
+        downloaded_files = gdrive_search.list_files_in_folder(service, folder_id)
+        # downloaded_files = ["Copy of DraftRFPABP08012024.pdf", 'DraftRFPABP08012024.pdf', 'Invoice-A3809B34-0003.pdf']
+    
+        if downloaded_files:
+            gdrive_search.create_search_index(downloaded_files)
+            return JSONResponse(content={"message":"Success!", "status": True}, status_code=200)
+        else:
+            print("No files to index.")
+            return JSONResponse(content={"message":"No files to index.", "status": False}, status_code=400)
+    except Exception as e:
+        return JSONResponse(content={"message":"Something Went Wrong!", "status": False, "data": str(e)}, status_code=400)
+
+@router.post("/answer_doc")
+def answer_doc(question: str):
+    try:
+        answer = gdrive_search.answer_question_with_chain(question)
+        return JSONResponse(content={"message":"Success!", "status": True, "data": answer}, status_code=200)
+    except Exception as e:
+        return JSONResponse(content={"message":"Something Went Wrong!", "status": False, "data": str(e)}, status_code=400)
 
 app.include_router(router)    
 # query = input("Ask me anything? ")
