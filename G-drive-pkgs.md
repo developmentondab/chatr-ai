@@ -2,9 +2,9 @@ pip install google-auth google-auth-oauthlib google-auth-httplib2
 pip install google-api-python-client
 pip install PyPDF2
 pip install faiss-cpu/ faiss-gpu based on python version and OperatingSystem
-
+```
 **Note: Enable Google Drive API to get the files.
-
+```
 Steps to Generate credentials.json file
 1. In the Google Cloud console, go to Menu menu > APIs & Services > Credentials.
    Go to Credentials
