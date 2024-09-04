@@ -43,6 +43,8 @@ OPENAI_API_KEY=<your_api_key>
 
 ```
 python3 app.py
+
+For fast api Gunicorn run unicorn app:app 
 ```
 
 ## How it works
