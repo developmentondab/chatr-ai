@@ -1,7 +1,11 @@
 pip install google-auth google-auth-oauthlib google-auth-httplib2
+
 pip install google-api-python-client
+
 pip install PyPDF2
+
 pip install faiss-cpu/ faiss-gpu based on python version and OperatingSystem
+
 ```
 **Note: Enable Google Drive API to get the files.
 ```
